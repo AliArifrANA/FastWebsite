@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAST NUCES – Student Gateway</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0a2455;--navy2:#143a82;--orange:#f28c28;--ink:#16203a;--bg:#f5f7fb}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Sora',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+button{font:inherit;cursor:pointer;border:0}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+
+/* Campus picker */
+#picker{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 20% 10%,var(--navy2),var(--navy) 70%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:opacity .6s,visibility .6s}
+#picker.hide{opacity:0;visibility:hidden}
+#picker h1{font-size:clamp(1.6rem,4vw,2.8rem);font-weight:800;text-align:center;animation:drop .8s cubic-bezier(.2,.9,.3,1.2) both}
+#picker p{opacity:.8;margin:8px 0 36px;animation:drop .8s .15s both}
+.campuses{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;max-width:900px;width:100%}
+.campus{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;padding:26px 16px;border-radius:16px;font-weight:600;font-size:1.05rem;backdrop-filter:blur(6px);opacity:0;transform:translateY(40px) scale(.9);animation:pop .6s forwards;transition:background .25s,transform .25s,color .25s}
+.campus small{display:block;font-weight:400;opacity:.7;margin-top:4px;font-size:.78rem}
+.campus:hover{background:var(--orange);color:var(--navy);transform:translateY(-6px) scale(1.04)}
+@keyframes pop{to{opacity:1;transform:none}}
+@keyframes drop{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:none}}
+
+/* Welcome splash */
+#welcome{position:fixed;inset:0;z-index:99;background:var(--orange);color:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;visibility:hidden;clip-path:circle(0% at 50% 50%)}
+#welcome.show{visibility:visible;animation:reveal .9s forwards}
+#welcome.out{animation:fade .7s forwards}
+#welcome h2{font-size:clamp(2.4rem,9vw,7rem);font-weight:800;line-height:1.05;display:flex;gap:.25em;flex-wrap:wrap;justify-content:center;padding:0 16px}
+#welcome h2 span{display:inline-block;opacity:0;transform:translateY(60px) rotate(6deg);animation:letter .6s forwards}
+#welcome p{margin-top:18px;font-size:1.2rem;font-weight:600;opacity:0;animation:fade2 .6s 1.1s forwards}
+@keyframes reveal{to{clip-path:circle(150% at 50% 50%)}}
+@keyframes letter{to{opacity:1;transform:none}}
+@keyframes fade2{to{opacity:1}}
+@keyframes fade{from{opacity:1;visibility:visible;clip-path:circle(150% at 50% 50%)}to{opacity:0;visibility:hidden;clip-path:circle(150% at 50% 50%)}}
+
+/* Site */
+header{position:sticky;top:0;z-index:50;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 5vw}
+.logo{font-weight:800;font-size:1.2rem}.logo b{color:var(--orange)}
+nav{display:flex;gap:22px;align-items:center;font-size:.9rem}
+nav a{color:#fff;text-decoration:none;opacity:.85}nav a:hover{opacity:1;color:var(--orange)}
+.chip{background:var(--orange);color:var(--navy);padding:6px 14px;border-radius:20px;font-weight:600;font-size:.82rem}
+.hero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:90px 5vw 130px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;border-radius:50%;border:60px solid rgba(242,140,40,.18)}
+.hero h1{font-size:clamp(2rem,5vw,3.6rem);max-width:760px;line-height:1.15;font-weight:800}
+.hero p{max-width:600px;margin:18px 0 28px;opacity:.85}
+.btn{background:var(--orange);color:var(--navy);padding:13px 26px;border-radius:30px;font-weight:600;transition:transform .2s,box-shadow .2s;text-decoration:none;display:inline-block}
+.btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.btn.ghost{background:transparent;border:2px solid #fff;color:#fff;margin-left:10px}
+section{padding:80px 5vw}
+.title{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;color:var(--navy);margin-bottom:8px}
+.sub{color:#5a6685;margin-bottom:30px;max-width:640px}
+
+#help{margin-top:-80px;position:relative;z-index:5;padding-top:0}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
+.card{background:#fff;border-radius:18px;padding:32px 28px;box-shadow:0 14px 40px rgba(10,36,85,.12);border-top:5px solid var(--orange);opacity:0;transform:translateY(50px)}
+.card.in{opacity:1;transform:none;transition:opacity .7s,transform .7s}
+.card.in:hover{transform:translateY(-8px);transition:transform .25s}
+.card .ic{font-size:2rem;margin-bottom:10px}
+.card h3{color:var(--navy);margin-bottom:6px}
+.card p{color:#5a6685;font-size:.93rem;margin-bottom:16px}
+.card button{background:var(--navy);color:#fff;padding:9px 18px;border-radius:20px;font-size:.85rem;transition:background .2s}
+.card button:hover{background:var(--orange);color:var(--navy)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px;text-align:center;background:var(--navy);color:#fff;border-radius:20px;padding:40px 20px}
+.stats b{display:block;font-size:2.3rem;color:var(--orange)}.stats span{opacity:.8;font-size:.9rem}
+
+.tabs{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
+.tabs button{padding:8px 18px;border-radius:20px;background:#e3e8f3;font-weight:600;color:var(--navy)}
+.tabs button.on{background:var(--navy);color:#fff}
+.progs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.prog{background:#fff;padding:20px;border-radius:14px;border-left:5px solid var(--navy2);box-shadow:0 4px 14px rgba(0,0,0,.05);transition:.25s;text-decoration:none;color:inherit;display:block;animation:drop .4s both}
+.prog:hover{border-left-color:var(--orange);transform:translateX(6px)}
+.prog h4{color:var(--navy);font-size:.98rem}.prog p{font-size:.82rem;color:#5a6685}
+.news{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.news a{background:#fff;padding:22px;border-radius:14px;text-decoration:none;color:var(--navy);font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.05);transition:.25s}
+.news a:hover{transform:translateY(-4px)}.news small{display:block;color:#5a6685;font-weight:400;margin-top:6px}
+.campuslinks{display:flex;flex-wrap:wrap;gap:12px}
+.campuslinks a{background:#fff;border:2px solid var(--navy);color:var(--navy);padding:10px 20px;border-radius:30px;text-decoration:none;font-weight:600;transition:.2s}
+.campuslinks a:hover{background:var(--navy);color:#fff}
+footer{background:var(--navy);color:#fff;padding:36px 5vw;font-size:.9rem;display:grid;gap:6px}
+footer a{color:var(--orange)}
+footer button{background:none;color:var(--orange);text-decoration:underline;text-align:left;padding:0}
+
+/* Modal */
+#overlay{position:fixed;inset:0;z-index:120;background:rgba(6,16,40,.65);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+#overlay.open{opacity:1;visibility:visible}
+.modal{background:#fff;border-radius:20px;max-width:580px;width:100%;max-height:88vh;overflow:auto;padding:34px;position:relative;transform:scale(.8) translateY(40px);transition:transform .4s cubic-bezier(.2,.9,.3,1.3)}
+#overlay.open .modal{transform:none}
+.modal h3{color:var(--navy);font-size:1.5rem;margin-bottom:6px}
+.modal p{color:#4b5575;margin-bottom:14px;font-size:.93rem}
+.modal ul{list-style:none;display:grid;gap:10px}
+.modal li{background:var(--bg);padding:11px 16px;border-radius:10px;border-left:4px solid var(--orange);font-size:.92rem}
+.modal li a{color:var(--navy2);font-weight:600;text-decoration:none}.modal li a:hover{color:var(--orange)}
+.x{position:absolute;top:14px;right:16px;background:var(--bg);width:34px;height:34px;border-radius:50%;font-size:1.1rem}
+.pane{display:none;animation:drop .4s}.pane.on{display:block}
+@media(max-width:720px){nav a{display:none}.btn.ghost{margin:10px 0 0}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-delay:0s!important;transition-duration:.01s!important}}
+
+/* Full-screen pages */
+#panel{position:fixed;inset:0;z-index:130;background:var(--bg);overflow:auto;transform:translateY(100%);visibility:hidden;transition:transform .6s cubic-bezier(.2,.9,.3,1),visibility .6s}
+#panel.open{transform:none;visibility:visible}
+.panelbar{position:sticky;top:0;z-index:2;background:var(--navy);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:14px 5vw}
+.panelbar button{background:var(--orange);color:var(--navy);padding:8px 18px;border-radius:20px;font-weight:600}
+.phero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:60px 5vw 70px}
+.phero h1{font-size:clamp(2rem,6vw,4rem);font-weight:800;line-height:1.1}
+.phero p{max-width:640px;margin-top:14px;opacity:.88}
+.pwrap{padding:50px 5vw;max-width:1000px;margin:0 auto}
+.pwrap h2{color:var(--navy);margin:34px 0 12px}
+.pwrap p{color:#3d4866;margin-bottom:12px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 18px}
+.tags span{background:#fff;border:1px solid #d5dcec;padding:6px 14px;border-radius:20px;font-size:.85rem;color:var(--navy)}
+.tl{border-left:4px solid var(--orange);margin:20px 0 0 10px;padding-left:26px}
+.ti{position:relative;margin-bottom:22px;background:#fff;padding:16px 20px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.05);opacity:0;transform:translateX(-30px)}
+#panel.open .ti{animation:slideIn .6s forwards}
+.ti::before{content:"";position:absolute;left:-37px;top:20px;width:16px;height:16px;border-radius:50%;background:var(--navy);border:4px solid var(--orange)}
+.ti b{color:var(--orange);font-size:1.1rem}.ti h4{color:var(--navy)}.ti p{margin:4px 0 0;font-size:.9rem}
+@keyframes slideIn{to{opacity:1;transform:none}}
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin-top:10px}
+.why div{background:#fff;border-radius:16px;padding:24px;border-top:5px solid var(--orange);box-shadow:0 8px 24px rgba(10,36,85,.08);opacity:0;transform:translateY(30px)}
+#panel.open .why div{animation:slideIn .6s forwards}
+.why .ic{font-size:1.8rem}.why h4{color:var(--navy);margin:6px 0}.why p{font-size:.88rem;margin:0}
+.note{font-size:.8rem;color:#6a7491;margin-top:26px}
+.note a{color:var(--navy2)}
+.disc{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.disc button{text-align:left;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:30px 26px;border-radius:18px;transition:transform .25s,box-shadow .25s}
+.disc button:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(10,36,85,.3)}
+.disc button b{display:block;font-size:1.3rem;color:var(--orange)}.disc button span{opacity:.85;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<div id="picker">
+  <h1>Welcome to FAST NUCES</h1>
+  <p>Select your campus to continue</p>
+  <div class="campuses" id="campusGrid"></div>
+</div>
+
+<div id="welcome"><h2 id="wText"></h2><p id="wCampus"></p></div>
+
+<header>
+  <div class="logo">FAST<b>•</b>NUCES</div>
+  <nav><a href="#help">Help</a><a href="#discover">Discover</a><a href="#programs">Programs</a><a href="#news">News</a><a href="#contact">Contact</a><span class="chip" id="campusChip">Campus</span></nav>
+</header>
+
+<div class="hero">
+  <h1>Premier University of Pakistan</h1>
+  <p>Six modern campuses in major cities across the country. Renowned for the quality and impact of its students in the development of local software and other industries.</p>
+  <a class="btn" href="#help">How can we help?</a>
+  <a class="btn ghost" id="campusSite" href="#" target="_blank" rel="noopener">Visit your campus site</a>
+</div>
+
+<section id="help">
+  <div class="three">
+    <div class="card"><div class="ic">🎓</div><h3>Student Portal</h3><p>Flex student module, SLATE-LMS, NU Mail and academic rules in one place.</p><button data-modal="portal">Open options</button></div>
+    <div class="card"><div class="ic">📝</div><h3>Admissions</h3><p>Schedule, eligibility, test pattern, fee structure and Prospectus 2026.</p><button data-modal="admissions">Learn more</button></div>
+    <div class="card"><div class="ic">🏛️</div><h3>About FAST</h3><p>Our history, vision, research culture and six campuses.</p><button data-modal="about">Read about us</button></div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="stats">
+    <div><b data-n="6">0</b><span>Campuses</span></div>
+    <div><b data-n="2000" data-suf="+">0</b><span>Students on financial assistance</span></div>
+    <div><b data-n="60" data-pre="Rs " data-suf="M">0</b><span>Provided by FAST</span></div>
+    <div><b data-n="40" data-pre="Rs " data-suf="M">0</b><span>Provided by other donors</span></div>
+  </div>
+</section>
+
+<section id="discover" style="padding-top:0">
+  <h2 class="title">Discover FAST</h2>
+  <p class="sub">Open a full page to explore our biggest event, our history and what makes FAST stand out.</p>
+  <div class="disc">
+    <button data-panel="nascon"><b>NASCON</b><span>The National Students Convention hosted every year by FAST Islamabad</span></button>
+    <button data-panel="events"><b>Events through the years</b><span>A timeline from the first NASCON to today</span></button>
+    <button data-panel="why"><b>Why FAST?</b><span>Reasons students choose FAST-NUCES</span></button>
+  </div>
+</section>
+
+<section id="programs">
+  <h2 class="title">Offered Programs</h2>
+  <p class="sub">Choose a level to see the degrees offered. Each card links to the official program page.</p>
+  <div class="tabs" id="progTabs"><button class="on" data-l="bs">Bachelors</button><button data-l="ms">Masters</button><button data-l="phd">PhD</button></div>
+  <div class="progs" id="progGrid"></div>
+</section>
+
+<section style="padding-top:0">
+  <h2 class="title">Who is on campus?</h2>
+  <p class="sub">Tap a group to see what is available for them.</p>
+  <button class="btn" data-modal="students">For Students</button>
+  <button class="btn" data-modal="faculty" style="margin-left:10px">For Faculty</button>
+</section>
+
+<section id="news" style="padding-top:0">
+  <h2 class="title">News &amp; Events</h2>
+  <div class="news">
+    <a href="https://nu.edu.pk/News/Details/836" target="_blank" rel="noopener">Honhaar Scholarship Program 2026<small>Happening date: 09 Nov 2026</small></a>
+    <a href="https://nu.edu.pk/Events/Details/1126" target="_blank" rel="noopener">Advisory on Pakistan Qualification Registrar (PQR) for verification of academic programs &amp; student guidance<small>Happening date: 30 Mar 2026</small></a>
+    <a href="https://nu.edu.pk/News/List" target="_blank" rel="noopener">More news and events<small>See the full list on nu.edu.pk</small></a>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <h2 class="title">Our campuses</h2><p class="sub">Visit the official website of any campus.</p>
+  <div class="campuslinks" id="campusLinks"></div>
+</section>
+
+<footer id="contact">
+  <div><b>FAST-NUCES</b> · FAST-House, Rohtas Road, G-9/4, Islamabad 44000 · Tel: <a href="tel:111128128">111-128-128</a></div>
+  <div>© 2026 NUCES (demo recreation for learning). <button id="changeCampus">Change campus</button></div>
+</footer>
+
+<div id="panel" aria-hidden="true"><div class="panelbar"><b id="panelTitle">FAST</b><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div>
+
+<div id="overlay" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true"><button class="x" aria-label="Close">✕</button><div id="modalBody"></div></div></div>
+
+<script>
+const campuses=[["Islamabad","https://isb.nu.edu.pk"],["Lahore","https://lhr.nu.edu.pk"],["Karachi","https://khi.nu.edu.pk"],["Peshawar","https://pwr.nu.edu.pk"],["Multan","https://mtn.nu.edu.pk/"],["Chiniot-Faisalabad","https://cfd.nu.edu.pk/"]];
+let current=null;
+const P=(n,s)=>`https://nu.edu.pk/Program/${s}`;
+const programs={
+ bs:[["BS Computer Science","BS(CS)","Includes Technopreneurship stream"],["BS Software Engineering","BS(SE)","134 credit hours"],["BS Artificial Intelligence","BS(AI)","134 credit hours"],["BS Data Science","BS(DS)","134 credit hours"],["BS Cyber Security","BS(CY)","137 credit hours"],["BS Computer Engineering","BS(CE)","139 credit hours"],["BS Electrical Engineering","BS(EE)","140 credit hours"],["BS Civil Engineering","BS(CV)","140 credits"],["BBA","BBA","136 credit hours"],["BS Accounting & Finance","BS(AF)","136 credit hours"],["BS Financial Technology","BS(FinTech)","136 credit hours"],["BS Business Analytics","BS(BA)","136 credit hours"]],
+ ms:[["MS Computer Science","MS(CS)","32 credit hours"],["MS Artificial Intelligence","MS(AI)","32 credit hours"],["MS Data Science","MS(DS)","32 credit hours"],["MS Cyber Security","MS(CY)","32 credit hours"],["MS Software Engineering","MS(SE)","32 credit hours"],["MS Electrical Engineering","MS(EE)","30 credit hours"],["MS Civil Engineering","MS(CV)","30 credit hours"],["MBA","MBA","62 credit hours"],["MS Business Analytics","MS(BA)","45 credit hours"],["MS Mathematics","MS(Math)","31 credit hours"],["MS Applied Linguistics","MS(LING)","30 credit hours"],["MS Global Virtual Management","MS(GVM)","32 credit hours"]],
+ phd:[["PhD Computer Science","PhD(CS)","Coursework, comprehensive exam, dissertation"],["PhD Software Engineering","PhD(SE)","6 courses, 18 credit hours"],["PhD Electrical Engineering","PhD(EE)","Original research dissertation"],["PhD Civil Engineering","PhD(CV)","Evaluated by foreign experts"],["PhD Mathematics","PhD(Math)","Open defence required"],["PhD Management Sciences","PhD(MS)","Islamabad and Lahore campuses"],["PhD English (Linguistics)","PhD(EngLING)","Interdisciplinary research"]]
+};
+function showProgs(l){
+  document.getElementById('progGrid').innerHTML=programs[l].map(([n,s,d],i)=>`<a class="prog" style="animation-delay:${i*.04}s" href="${P(n,s)}" target="_blank" rel="noopener"><h4>${n}</h4><p>${d}</p></a>`).join('');
+  document.querySelectorAll('#progTabs button').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
+}
+document.getElementById('progTabs').onclick=e=>{if(e.target.dataset.l)showProgs(e.target.dataset.l)};
+showProgs('bs');
+
+const grid=document.getElementById('campusGrid'),links=document.getElementById('campusLinks');
+campuses.forEach(([c,u],i)=>{
+  const b=document.createElement('button');b.className='campus';b.style.animationDelay=(.3+i*.12)+'s';
+  b.innerHTML=c+'<small>'+u.replace('https://','').replace(/\/$/,'')+'</small>';b.onclick=()=>choose(c,u);grid.appendChild(b);
+  links.innerHTML+=`<a href="${u}" target="_blank" rel="noopener">${c} Campus</a>`;
+});
+
+function choose(city,url){
+  current=city;
+  document.getElementById('campusChip').textContent=city+' Campus';
+  const cs=document.getElementById('campusSite');cs.href=url;cs.textContent='Visit '+city+' campus site';
+  document.getElementById('picker').classList.add('hide');
+  const w=document.getElementById('welcome'),t=document.getElementById('wText');t.innerHTML='';
+  'WELCOME 2026 BATCH'.split(' ').forEach((word,i)=>{const s=document.createElement('span');s.textContent=word;s.style.animationDelay=(.5+i*.25)+'s';t.appendChild(s)});
+  document.getElementById('wCampus').textContent='FAST NUCES · '+city+' Campus';
+  w.className='';void w.offsetWidth;w.classList.add('show');
+  setTimeout(()=>{w.classList.remove('show');w.classList.add('out');revealCards();countUp()},3400);
+}
+document.getElementById('changeCampus').onclick=()=>{document.getElementById('welcome').className='';document.getElementById('picker').classList.remove('hide');window.scrollTo(0,0)};
+function revealCards(){document.querySelectorAll('.card').forEach((c,i)=>setTimeout(()=>c.classList.add('in'),i*180))}
+function countUp(){document.querySelectorAll('[data-n]').forEach(el=>{
+  const end=+el.dataset.n,pre=el.dataset.pre||'',suf=el.dataset.suf||'',st=performance.now();
+  (function f(now){const p=Math.min((now-st)/1500,1);el.textContent=pre+Math.floor(end*p).toLocaleString()+suf;if(p<1)requestAnimationFrame(f)})(st)})}
+
+/* Pop-ups (links point to real nu.edu.pk pages) */
+const L=(t,u)=>`<li><a href="${u}" target="_blank" rel="noopener">${t}</a></li>`;
+const data={
+ portal:()=>`<h3>Student Portal</h3><p>Everything you need${current?' at the '+current+' campus':''}.</p><ul>${L('Flex Student Module (login)','http://flexstudent.nu.edu.pk/Login')}${L('SLATE-LMS','http://slate.nu.edu.pk')}${L('NU Mail','http://mail.nu.edu.pk')}${L('Academic Calendar','https://nu.edu.pk/Student/Calender')}${L('Grading','https://nu.edu.pk/Student/Grading')}${L('Degree Verification Program','https://nu.edu.pk/Student/dvp')}</ul>`,
+ admissions:()=>`<h3>Admissions</h3><p>Everything about joining FAST-NUCES.</p><ul>${L('Offered Programs','https://nu.edu.pk/Degree-Programs')}${L('Admission Schedule','https://nu.edu.pk/Admissions/Schedule')}${L('How To Apply','https://nu.edu.pk/Admissions/HowToApply')}${L('Eligibility Criteria','https://nu.edu.pk/Admissions/EligibilityCriteria')}${L('Test Pattern','https://nu.edu.pk/Admissions/TestPattern')}${L('Fee Structure','https://nu.edu.pk/Admissions/FeeStructure')}${L('Scholarships','https://nu.edu.pk/Admissions/Scholarship')}${L('Prospectus 2026','https://nu.edu.pk/Admissions/Prospectus')}${L('FAQ','https://nu.edu.pk/Admissions/FAQ')}</ul>`,
+ about:()=>`<h3>About FAST-NUCES</h3><p>Founded as a Federally Chartered University in July 2000, the National University of Computer and Emerging Sciences is a premier university of Pakistan with six campuses: Karachi, Lahore, Islamabad, Peshawar, Chiniot-Faisalabad and Multan.</p><p>Our research wings are recognized nationally and internationally, and our vision is to become a globally recognized research university of Pakistan.</p><ul>${L('History','https://nu.edu.pk/University/History')}${L('Vision & Mission','https://nu.edu.pk/vision-and-mission')}${L('Board of Governors','https://nu.edu.pk/University/Governers')}${L('Policies','https://nu.edu.pk/University/Policies')}</ul>`,
+ students:()=>`<h3>Students</h3><p>Tools and support for your degree.</p><div class="tabs"><button class="on" data-tab="a">Academics</button><button data-tab="b">Life &amp; support</button></div>
+  <div class="pane on" id="a"><ul>${L('Rules & Regulations (Bachelor Programs)','https://nu.edu.pk/Student/RulesUndergrad')}${L('Code of Conduct','https://nu.edu.pk/Student/Conduct')}${L('FAST-NU Library','https://nu.edu.pk/Services/Library')}</ul></div>
+  <div class="pane" id="b"><ul>${L('Financial Assistance / Scholarships','https://nu.edu.pk/Student/FinancialRules')}${L('Student chapter: NUCES-ACM','http://www.nuces-acm.org/')}${L('Student chapter: IEEE-NUCES','http://www.sites.ieee.org/sb-nuces-karachi/')}${L('Career Services Office','https://nu.edu.pk/Services/PlacementOffice')}</ul></div>`,
+ faculty:()=>`<h3>Faculty</h3><p>Resources for teaching and research.</p><div class="tabs"><button class="on" data-tab="a">Teaching</button><button data-tab="b">Research</button></div>
+  <div class="pane on" id="a"><ul>${L('SLATE-LMS','http://slate.nu.edu.pk')}${L('NU Mail','http://mail.nu.edu.pk')}${L('IQAE (quality assurance)','https://nu.edu.pk/IQAE')}</ul></div>
+  <div class="pane" id="b"><ul>${L('ORIC home','https://nu.edu.pk/Oric')}${L('Funding Opportunities','https://nu.edu.pk/Oric/FundingOppertunities')}${L('Travel Grants','https://nu.edu.pk/Oric/TravelGrants')}${L('Approved PhD Supervisors','https://nu.edu.pk/University/HECSupervisors')}</ul></div>`
+};
+const ov=document.getElementById('overlay'),body=document.getElementById('modalBody');
+function openModal(k){body.innerHTML=data[k]();ov.classList.add('open');ov.setAttribute('aria-hidden','false')}
+function closeModal(){ov.classList.remove('open');ov.setAttribute('aria-hidden','true')}
+document.querySelectorAll('[data-modal]').forEach(b=>b.onclick=()=>openModal(b.dataset.modal));
+ov.querySelector('.x').onclick=closeModal;
+ov.onclick=e=>{if(e.target===ov)closeModal()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+body.addEventListener('click',e=>{const t=e.target.dataset.tab;if(!t)return;
+  body.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b===e.target));
+  body.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===t))});
+
+/* Full-screen pages */
+const T=(y,h,p)=>`<div class="ti"><b>${y}</b><h4>${h}</h4><p>${p}</p></div>`;
+const W=(i,h,p)=>`<div><div class="ic">${i}</div><h4>${h}</h4><p>${p}</p></div>`;
+const panels={
+ nascon:{title:'NASCON',html:()=>`
+  <div class="phero"><h1>NASCON</h1><p>The National Students Convention: FAST-NUCES Islamabad's annual flagship event, bringing students from universities and colleges across Pakistan together for competitions, workshops and talks.</p></div>
+  <div class="pwrap">
+   <h2>What is NASCON?</h2>
+   <p>NASCON is held every year at the Islamabad campus. It started in 2001, and in its earlier years it was also described as the National Solutions Convention, aiming to point young people's passions toward solving Pakistan's problems. It covers computer science, engineering, business, sports, arts and social events, and has long drawn in industry professionals and faculty as well as students.</p>
+   <h2>What happens there</h2>
+   <div class="tags"><span>Software &amp; app development</span><span>Circuit Mania</span><span>Soldering Master</span><span>Engineering projects</span><span>Math Marathon</span><span>Entrepreneurial idea competition</span><span>Model United Nations</span><span>E-Gaming</span><span>Scavenger hunt</span><span>Ad Mad</span><span>Poster design</span><span>Volleyball &amp; Futsal</span><span>Painting &amp; Pottery</span><span>NASCON Got Talent</span></div>
+   <h2>NASCON through the years</h2>
+   <div class="tl">
+    ${T('2001','The first NASCON','The convention begins at FAST-NUCES Islamabad.')}
+    ${T('2003','NASCON\'03','An all-Pakistan national software exhibition and competition, with 172 student participants.')}
+    ${T('2012','NASCON\'12','Engineering, business and social events; the engineering project competition was held on 21 April.')}
+    ${T('2014','NASCON\'14 (18 to 20 April)','Engineering track with Circuit Mania, Interface-A-Thons, Engineering Problem Solving, Engineering Project Competition and Math Marathon.')}
+    ${T('2015','NASCON\'15','Participants from all over Pakistan competed.')}
+    ${T('2019','NASCON\'19 (April)','Three days with more than 50 sessions, including a scavenger hunt, Model United Nations, Ad Mad, poster design, e-gaming and an accounting and finance guru contest.')}
+    ${T('2025','NASCON\'25 (18 to 20 April)','Hosted by FAST Islamabad. FAST Lahore alone sent a delegation of 118 students.')}
+   </div>
+   <p class="note">The dates for the next NASCON were not published where I looked. Check <a href="https://isb.nu.edu.pk" target="_blank" rel="noopener">isb.nu.edu.pk</a> for announcements.</p>
+  </div>`},
+ events:{title:'Events through the years',html:()=>`
+  <div class="phero"><h1>Events through the years</h1><p>A timeline of FAST events drawn from published campus and news records, oldest first.</p></div>
+  <div class="pwrap"><div class="tl">
+   ${T('2001','First NASCON','FAST Islamabad launches its annual national students convention.')}
+   ${T('2003','NASCON\'03','National software exhibition and competition.')}
+   ${T('2012','NASCON\'12','National Solutions Convention with engineering, business and social events.')}
+   ${T('2014','NASCON\'14 and Carnival of Creative Arts','Three-day NASCON on 18 to 20 April, plus a carnival highlighting the cross-curricular talents of students.')}
+   ${T('2015','NASCON\'15','Another national gathering of student teams.')}
+   ${T('2016','44th Convocation','FAST Islamabad celebrates its 44th convocation.')}
+   ${T('2017','49th Convocation (9 August)','The Federal Minister for Education and Professional Training was chief guest.')}
+   ${T('2018','Orientation, Convocation and certificate programs','New-batch orientation on 17 August, a 2018 convocation, and a week-long supply chain management certificate program on 16 to 20 July.')}
+   ${T('2019','NASCON\'19 and 58th Convocation','Three-day NASCON with 50+ sessions in April, and the 58th Convocation on 1 August.')}
+   ${T('2023','74th Convocation (21 October)','Held at the Islamabad campus.')}
+   ${T('2024','79th Convocation','Held at the Islamabad campus in late 2024.')}
+   ${T('2025','NASCON\'25 and 85th Convocation','NASCON on 18 to 20 April; the 85th Convocation on 13 December honoured BS, BBA, MBA, MS and PhD graduates.')}
+   ${T('2026','Homecoming, TEDx and scholarships','Alumni Homecoming on 31 January, TEDxFASTIslamabad on 5 February, and the Honhaar Scholarship Program 2026 (9 November).')}
+  </div>
+  <h2>Also on campus over the years</h2>
+  <div class="tags"><span>Tree plantation campaign (1,200+ plants)</span><span>IEEE FAST Robo robotics event</span><span>CSS exam preparation session with FPSC</span><span>Recruitment drives (Nayatel, CARE)</span><span>Mock interviews for BBA students</span></div>
+  <p class="note">This is not a complete record of every event FAST has held. For the full list, see <a href="https://nu.edu.pk/Events/List" target="_blank" rel="noopener">nu.edu.pk/Events</a> and <a href="https://nu.edu.pk/News/List" target="_blank" rel="noopener">News</a>.</p></div>`},
+ why:{title:'Why FAST?',html:()=>`
+  <div class="phero"><h1>Why FAST?</h1><p>Reasons students choose FAST-NUCES, based on what the university itself publishes.</p></div>
+  <div class="pwrap"><div class="why">
+   ${W('🏛️','A federally chartered university','Founded in July 2000 as a Federally Chartered University, and described as the first multi-campus private sector university set up under a federal charter.')}
+   ${W('🌆','Six modern campuses','Karachi, Lahore, Islamabad, Peshawar, Chiniot-Faisalabad and Multan, each with a world class educational environment and recreational facilities.')}
+   ${W('💼','Strong job outcomes','FAST states that its graduates have the highest job rate among Pakistani graduates and serve multinational companies around the globe.')}
+   ${W('💰','Financial support','More than 2000 students receive scholarships and interest-free loans, backed by Rs 60 million from FAST and Rs 40 million from other donors.')}
+   ${W('🔬','Serious research','Research wings recognized nationally and internationally, with a vision to become a globally recognized research university of Pakistan.')}
+   ${W('✅','Quality assurance','A Quality Enhancement Cell working to HEC guidelines, with undergraduate programs accredited by the relevant regulatory authorities.')}
+   ${W('🎓','Degrees at every level','Bachelors, Masters and PhD programs across computing, engineering and management.')}
+   ${W('🎉','Vibrant student life','NASCON, student chapters like ACM and IEEE, green lawns and a peaceful learning environment.')}
+  </div>
+  <p class="note">These points come from FAST's own website and prospectus, so treat them as the university's claims. Compare programs and campuses yourself before deciding.</p></div>`}
+};
+const panel=document.getElementById('panel'),pb=document.getElementById('panelBody');
+function openPanel(k){
+  pb.innerHTML=panels[k].html();document.getElementById('panelTitle').textContent=panels[k].title;
+  pb.querySelectorAll('.ti,.why>div').forEach((el,i)=>el.style.animationDelay=(.35+i*.08)+'s');
+  panel.scrollTop=0;panel.classList.add('open');panel.setAttribute('aria-hidden','false');
+}
+function closePanel(){panel.classList.remove('open');panel.setAttribute('aria-hidden','true')}
+document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>openPanel(b.dataset.panel));
+document.getElementById('panelClose').onclick=closePanel;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel()});
+</script>
+</body>
+</html>
+```[cite: 1]
